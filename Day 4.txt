@@ -1,0 +1,336 @@
+=== Export & Import Navicat ===
+
+01. Export Table
+	- Export employees & departments ke sebuah file file 
+	  a. employees.csv
+	  b. departments.xlsx
+	  
+02. Export hasil Query
+
+	SELECT e.first_name, e.salary, 
+	       e.hire_date, d.department_name
+	FROM employees e, departments d
+	WHERE e.department_id = d.department_id
+	      AND
+		  e.salary > 7000
+		  AND
+		  e.department_id in (20,40,50,70);
+		  
+	- Export, membentuk file : EmpDept.xlsx
+	
+03. Import Table
+	a. employees.csv		--> Table PEGAWAI
+	b. departments.xlsx     --> Table DIREKTORAT
+	c. EmpDept.xlsx         --> Table EMPDEPT
+
+
+=== 06. Managing Tables Using DML Statements ===
+
+01. Inserting New Rows - Cara 1
+
+	INSERT INTO departments(department_id,
+	                        department_name, 
+							manager_id, 
+							location_id)
+	VALUES (300, 'Animes', 100, 1700);
+
+02. Inserting New Rows - Cara 2
+
+	INSERT INTO departments(department_id,
+	                        department_name)
+	VALUES (310, 'Drakor');
+
+03. Inserting New Rows - Cara 3
+
+	INSERT INTO departments
+	VALUES (320, 'Sinetron', 110, NULL);
+	
+    SELECT * 
+	FROM departments
+	WHERE department_id >= 300;
+	
+04. Create Structure Table
+
+	CREATE TABLE sales_reps(id, name, salary, commission_pct)
+	AS SELECT employee_id, last_name, salary, commission_pct
+	   FROM employees
+	   WHERE 1=2;
+	   
+	SELECT * FROM sales_reps;
+
+05. Copying Rows from Another Table
+
+	INSERT INTO sales_reps(id, name, salary, commission_pct)
+		SELECT employee_id, last_name, salary, commission_pct
+		FROM employees
+		WHERE job_id LIKE '%REP%';	
+
+	SELECT * FROM sales_reps;
+
+06. Updating Rows in a Table
+
+	SELECT employee_id, first_name, last_name, salary
+	FROM employees
+	WHERE employee_id = 200;
+
+		200	Jennifer	Whalen	4400
+
+	UPDATE employees
+	  SET first_name = 'Naruto',
+	      last_name  = 'Uzumaki',
+		  salary     = 5500
+	WHERE employee_id = 200;
+
+	SELECT employee_id, first_name, last_name, salary
+	FROM employees
+	WHERE employee_id = 200;
+
+		200	Naruto	Uzumaki	5500
+
+	SELECT first_name, salary
+	FROM pegawai;
+	
+	UPDATE pegawai
+	  SET salary = 7000;
+	
+	SELECT first_name, salary
+	FROM pegawai;	
+	
+07. Updating Two Columns with a Subquery
+
+    SELECT job_id,salary
+    FROM employees
+    WHERE employee_id = 205;
+
+    SELECT job_id,salary
+    FROM employees
+    WHERE employee_id = 103;
+	
+	UPDATE employees
+	SET (job_id,salary) = (SELECT job_id,salary
+						   FROM employees
+						   WHERE employee_id = 205)
+	WHERE employee_id = 103;
+
+    SELECT job_id,salary
+    FROM employees
+    WHERE employee_id = 103;
+
+08. Updating Rows Based on Another Table
+
+	SELECT department_id
+	FROM employees
+	WHERE employee_id = 100;
+	
+	SELECT job_id
+	FROM employees
+	WHERE employee_id = 200;	
+						  		
+	select first_name, department_id
+	from pegawai
+	where job_id = 'AD_ASST';
+	
+		Jennifer	10
+	
+	UPDATE pegawai
+	 SET department_id = (SELECT department_id
+					      FROM employees
+						  WHERE employee_id = 100)
+	WHERE job_id = (SELECT job_id
+				    FROM employees
+				    WHERE employee_id = 200);
+
+	select first_name, department_id
+	from pegawai
+	where job_id = 'AD_ASST';
+
+09. Deleting Rows from a Table
+
+    SELECT * 
+	FROM departments
+	WHERE department_id >= 300;
+
+		300	Animes		100	1700
+		310	Drakor		
+		320	Sinetron	110	
+		330	Manga		109	1900
+
+	DELETE FROM departments
+	WHERE department_id = 330;
+
+	DELETE FROM departments
+	WHERE department_name = 'Sinetron';
+
+	DELETE FROM departments
+	WHERE department_id in (300,310);
+
+10. Deleting Rows Based on Another Table
+
+	DELETE FROM pegawai
+	WHERE department_id IN (SELECT department_id
+							FROM departments
+							WHERE department_name
+							LIKE '%Public%');
+
+11. Transaction
+
+	INSERT
+	INSERT
+	DELETE
+	
+	
+	UPDATE
+	INSERT 
+	INSERT
+	
+12. Simulasi Commit
+	- Buka 2 Terminal
+	- Login sebagai user hr
+	
+	sqlplus hr/Welcome1
+	SQL> host cls
+	SQL> select * from regions;
+
+	Terminal 1
+	SQL> update regions
+	     set region_name = 'DKI'
+		 where region_id = 4;
+	SQL> select * from regions;
+	SQL> commit;
+	
+	Terminal 2
+	SQL> select * from regions;
+
+12. Simulasi Rollback 
+	- Buka 1 Terminal
+	- Login sebagai user hr
+
+	sqlplus hr/Welcome1
+	SQL> host cls
+	SQL> select first_name, salary
+	     from employees
+		 where department_id = 30;
+
+			FIRST_NAME               SALARY
+			-------------------- ----------
+			Den                       11000
+			Alexander                  3100
+			Shelli                     2900
+			Sigal                      2800
+			Guy                        2600
+			Karen                      2500
+
+			6 rows selected.
+
+	SQL> update employees
+		  set salary = 8000
+		  where department_id = 30;
+
+		6 rows updated.
+
+	SQL> select first_name, salary
+	     from employees
+		 where department_id = 30;
+
+			FIRST_NAME               SALARY
+			-------------------- ----------
+			Den                        8000
+			Alexander                  8000
+			Shelli                     8000
+			Sigal                      8000
+			Guy                        8000
+			Karen                      8000
+
+			6 rows selected.
+
+	SQL> rollback;
+	
+	SQL> select first_name, salary
+	     from employees
+		 where department_id = 30;
+
+			FIRST_NAME               SALARY
+			-------------------- ----------
+			Den                       11000
+			Alexander                  3100
+			Shelli                     2900
+			Sigal                      2800
+			Guy                        2600
+			Karen                      2500
+
+			6 rows selected.
+	
+=== 07. Creating Views ===
+
+01. Query ke sebuah View
+
+	SELECT *
+	FROM emp_details_view;
+	
+	SELECT first_name, salary, department_name, city
+	FROM emp_details_view
+	WHERE salary > 8000
+	      AND
+		  department_id in (30,40,50);
+	
+02. Creating a View
+
+	CREATE VIEW empvu80
+	AS SELECT employee_id, last_name, salary
+		FROM employees
+		WHERE department_id = 80;	
+	
+03. Creating a View
+
+	CREATE VIEW salvu50
+	AS SELECT employee_id ID_NUMBER, last_name NAME,
+		      salary*12 ANN_SALARY
+		FROM employees
+		WHERE department_id = 50;	
+	
+04. Modifying a View
+
+	CREATE OR REPLACE VIEW empvu80
+		      (id_number, name, sal, department_id)
+	AS SELECT employee_id, first_name || ' ' || last_name, 
+	          salary, department_id
+		FROM employees
+		WHERE department_id = 80;
+
+	SELECT * FROM empvu80;
+	
+Hari Budisantoso
+hari.budisantoso@gmail.com
+0819.0503.0001
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
