@@ -1,0 +1,209 @@
+=== Query Builder (LANJUTAN) ===
+
+01. Query 7 : Multiples Tables
+	- Employees
+	- Departments
+	- Locations
+	- Countries
+	
+	SELECT
+		EMPLOYEES.EMPLOYEE_ID,
+		EMPLOYEES.FIRST_NAME,
+		EMPLOYEES.SALARY,
+		DEPARTMENTS.DEPARTMENT_NAME,
+		LOCATIONS.CITY,
+		COUNTRIES.COUNTRY_NAME 
+	FROM
+		EMPLOYEES
+		INNER JOIN DEPARTMENTS ON EMPLOYEES.DEPARTMENT_ID = DEPARTMENTS.DEPARTMENT_ID
+		INNER JOIN LOCATIONS ON DEPARTMENTS.LOCATION_ID = LOCATIONS.LOCATION_ID
+		INNER JOIN COUNTRIES ON LOCATIONS.COUNTRY_ID = COUNTRIES.COUNTRY_ID 
+	WHERE
+		EMPLOYEES.SALARY > 9000 
+		AND EMPLOYEES.DEPARTMENT_ID IN ( 50, 70, 90 ) 
+	ORDER BY
+		EMPLOYEES.SALARY DESC
+
+=== 05. Introduction to Data Definition Language ===
+
+01. Creating Tables
+
+	CREATE TABLE dept
+	(deptno 	NUMBER(2),
+	 dname  	VARCHAR2(14),
+	 loc 		VARCHAR2(13),
+	 create_date DATE DEFAULT SYSDATE);
+
+	DESCRIBE dept;  ===> Tidak jalan di Navicat
+	                ===> Hanya jalan di Utility Oracle Database
+
+02. Option DEFAULT
+
+	SELECT * FROM dept;
+	
+	INSERT INTO dept values (10, 'IT', 'JKT', '01-JAN-2020');
+
+	SELECT * FROM dept;
+
+	INSERT INTO dept values (20, 'HR', 'SBY', NULL);
+
+	SELECT * FROM dept;
+
+	INSERT INTO dept(deptno, dname, loc) 
+	values (30, 'Finance', 'BDG');
+
+	SELECT * FROM dept;
+
+05. Without Constraints
+
+	INSERT INTO dept values (40, NULL, NULL, NULL);
+	INSERT INTO dept values (NULL, NULL, NULL, NULL);
+
+	SELECT * FROM dept;
+
+06. Create Table using GUI
+
+	EMP
+	  empno    number(3)
+	  ename    varchar2(25)
+	  salary   number(6)
+	  hiredate date
+
+	Select Table -> Right Click -> New Table
+
+07. Drop Table
+
+	drop table dept;
+	
+	Drop Table emp menggunakan GUI
+
+08. Create Table Depts with Constraint
+
+	CREATE TABLE depts
+	( department_id    NUMBER(4), 
+	  department_name  VARCHAR2(30) CONSTRAINT depts_name_nn NOT NULL
+	);
+
+	ALTER TABLE depts ADD 
+	( CONSTRAINT depts_id_pk PRIMARY KEY (department_id)
+	);
+
+	select * from depts;
+
+09. Operasi insert ke table Depts
+
+	insert into depts values(10, 'IT');
+	select * from depts;
+	
+	insert into depts values(NULL, 'HR');
+		ORA-01400: cannot insert NULL into ("HR"."DEPTS"."DEPARTMENT_ID")
+
+	insert into depts values(10, 'HR');
+		ORA-00001: unique constraint (HR.DEPTS_ID_PK) violated
+
+	insert into depts values(20, NULL);
+		ORA-01400: cannot insert NULL into ("HR"."DEPTS"."DEPARTMENT_NAME")
+
+	insert into depts values(20, 'HR');
+	select * from depts;
+
+10. Create Table Emps with Constraint
+
+	CREATE TABLE emps
+	( employee_id    NUMBER(6), 
+	  ename     	 VARCHAR2(25) 
+						CONSTRAINT emps_name_nn NOT NULL,
+	  email          VARCHAR2(25) 
+						CONSTRAINT emps_email_nn NOT NULL,
+	  salary         NUMBER(8,2),
+	  manager_id     NUMBER(6),
+	  department_id  NUMBER(4),
+	  CONSTRAINT     emps_salary_min CHECK (salary > 0),
+	  CONSTRAINT     emps_email_uk UNIQUE (email)
+	) ;
+
+	ALTER TABLE emps
+	ADD ( CONSTRAINT     emps_emp_id_pk 
+							PRIMARY KEY (employee_id),
+		  CONSTRAINT     emps_dept_fk 
+							FOREIGN KEY (department_id)
+							REFERENCES depts(department_id),
+		  CONSTRAINT     emps_manager_fk 
+							FOREIGN KEY (manager_id)
+							REFERENCES emps(employee_id)
+		) ;
+
+11. Insert ke table emps
+
+	insert into emps 
+	   values(101, 'Naruto', 'naruto@xyz.com', 1000, NULL, 10);
+
+	insert into emps 
+	   values(102, 'Sasuke', 'sasuke@xyz.com', 900, 101, 10);	
+
+	select * from emps;
+
+	insert into emps 
+	   values(103, 'Sakura', 'sakura@xyz.com', -950, 102, 20);	
+
+		ORA-02290: check constraint (HR.EMPS_SALARY_MIN) violated
+
+	insert into emps 
+	   values(103, 'Sakura', 'sasuke@xyz.com', 950, 102, 20);	
+
+		ORA-00001: unique constraint (HR.EMPS_EMAIL_UK) violated
+
+	insert into emps 
+	   values(103, 'Sakura', 'sakura@xyz.com', 950, 102, 30);	
+
+		ORA-02291: integrity constraint (HR.EMPS_DEPT_FK) violated - parent key not found
+
+	insert into emps 
+	   values(103, 'Sakura', 'sakura@xyz.com', 950, 100, 20);	
+
+		ORA-02291: integrity constraint (HR.EMPS_MANAGER_FK) violated - parent key not found
+
+	insert into emps 
+	   values(103, 'Sakura', 'sakura@xyz.com', 950, 102, 20);	
+
+	select * from emps;
+
+12. Creating a Table Using a Subquery
+
+	CREATE TABLE dept80
+	AS
+		SELECT employee_id, last_name,
+			   salary*12 ANNSAL, hire_date
+		FROM employees
+		WHERE department_id = 80;
+
+	SELECT * FROM dept80;
+
+13. ALTER TABLE - Adding a Column
+
+	ALTER TABLE dept80
+	ADD (job_id VARCHAR2(9));
+
+	SELECT * FROM dept80;
+
+14. ALTER TABLE - Modifying a Column
+
+	ALTER TABLE dept80
+	MODIFY (last_name VARCHAR2(30));
+
+	SELECT * FROM dept80; ==> Data di last_name tidak hilang
+	
+15. ALTER TABLE - Dropping a Column
+
+	ALTER TABLE dept80
+	DROP (job_id);
+
+	SELECT * FROM dept80;
+
+
+
+
+
+
+
+
